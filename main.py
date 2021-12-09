@@ -1,47 +1,45 @@
-import argparse
-import os
+import click
 
-from RSA_encryption import *
+from pathlib import Path
+from utils import *
 
 
 
-parser = argparse.ArgumentParser(prog="cipher")
+@click.group()
+def main():
+    pass
 
-sub_parsers = parser.add_subparsers()
 
-key_parser = sub_parsers.add_parser("key", help="Generate key of given length")
+@main.command()
+@click.option("-e", "--encrypt", is_flag=True, help="Encrypts specified file and writes it's content to a new file.")
+@click.option("-d", "--decrypt", is_flag=True, help="Decrypts specified file and writes it's content to a new file.")
+@click.argument("path", type=str)
+def exec(encrypt, decrypt, path):
 
-key_parser.add_argument("length", type=int, help="Length of key in bits")
+    if Path(path).is_file():
+        keys = load_key_pair()
 
-parser.add_argument("path", type=str, help="Path to file to encrypt/decrypt")
-parser.add_argument("-e", "--encrypt", action="store_true")
-parser.add_argument("-d", "--decrypt", action="store_true")
+        if not keys:
+            return
+        
+        private_key, public_key = keys
 
-args = parser.parse_args()
-
-print(args.length)
-
-if os.path.exists(args.path):
-
-    if args.encrypt or args.decrypt:
-
-        key_pair = generate_key_pair(args.generate_key)
-
-        if key_pair:
-
-            private_key, public_key = key_pair
-
-            if args.encrypt:
-                encrypt(args.path, public_key)
-
-            elif args.decrypt:
-                decrypt(args.path, private_key)
-
+        if encrypt:
+            encrypt_file(path, public_key)
+        elif decrypt:
+            decrypt_file(path, private_key)
         else:
-            print("Cannot generate private and public key,\nprobably due to given key length")
+            print("\nChoose what to do with file: encrypt/decrypt\n")
 
     else:
-        print("Please specify what You want to do with file: encrypt/decrypt")
+        print("\nGiven file doesn't exists\n")
 
-else:
-    print("Given path doesn't exists")
+
+@main.command()
+@click.argument("length", type=int)
+def key(length):
+    generate_key_pair(length)
+
+
+if __name__ == "__main__":
+    main()
