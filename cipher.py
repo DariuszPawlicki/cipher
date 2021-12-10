@@ -1,7 +1,7 @@
 import click
 
 from pathlib import Path
-from utils import *
+from cipher_utils import *
 
 
 
@@ -15,7 +15,9 @@ def main():
 @click.option("-d", "--decrypt", is_flag=True, help="Decrypts specified file and writes it's content to a new file.")
 @click.argument("path", type=str)
 def exec(encrypt, decrypt, path):
-
+    """
+    Executes encryption or decryption on specified file
+    """
     if Path(path).is_file():
         keys = load_key_pair()
 
@@ -38,6 +40,9 @@ def exec(encrypt, decrypt, path):
 @main.command()
 @click.argument("length", type=int)
 def key(length):
+    """
+    Generates key pair of specified length
+    """
     generate_key_pair(length)
 
 
